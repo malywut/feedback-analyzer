@@ -1,106 +1,133 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Quarkus Langchain4j Chat!</title>
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/css/patternfly.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/css/patternfly-additions.min.css">
-
-    <style>
-        #chat {
-          resize: none;
-          overflow: hidden;
-          min-height: 300px;
-          max-height: 300px;
-      }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-
-<body>
-        <nav class="navbar navbar-default navbar-pf" role="navigation">
-                <div class="navbar-header">                  
-                  <a class="navbar-brand" href="/">
-                   <p><strong>>> Feedback Tool Devoxx FR LangChain4j Lab</strong></p>
-                  </a>
+<body class="bg-gray-100 p-8">
+<div class="container mx-auto">
+    <div class="flex flex-col md:flex-row justify-between gap-4">
+        <!-- Feedback Input Panel -->
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col w-full md:w-1/2">
+            <div class="mb-4">
+                <h2 class="block text-gray-700 text-xl font-bold mb-2">Feedback Analyzer for a Coding Workshop</h2>
+            </div>
+            <form id="feedbackForm" action="#" method="POST">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="age">
+                        Age
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="age" type="number" placeholder="Enter your age" value="25">
                 </div>
-        </nav>
-    <div class="container">
-      <br/>
-      <div class="row">
-          <textarea class="col-md-8" id="chat"></textarea>
-      </div>
-      <div class="row">
-          <input class="col-md-6" id="msg" type="text" placeholder="Write any feedback about the lab, the examples, the speakers or the venue here. Ideas are also welcome">
-          <button class="col-md-1 btn btn-primary" id="send" type="button" disabled>send</button>
-      </div>
-      
-      </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="gender">
+                        Gender
+                    </label>
+                    <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="gender">
+                        <option>Please select</option>
+                        <option>Male</option>
+                        <option selected>Female</option>
+                        <option>Prefer not to say</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="country">
+                        Country
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           id="country" type="text" placeholder="Enter your country" value="Belgium">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="feedback">
+                        Free Feedback
+                    </label>
+                    <textarea
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-40"
+                            id="feedback" placeholder="Enter your feedback">Excellent workshop content, really very interesting to take home and continue to work on. The tempo of the workshop was a little high, I could hardly follow by times, but ok. And the food was really crap.</textarea>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            type="submit">
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/js/patternfly.min.js"></script>
+        <!-- Analysis Component -->
+        <div id="analysisPanel" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col w-full md:w-1/2">
+            <h2 class="block text-gray-700 text-xl font-bold mb-2">Analysis Component</h2>
+            <div id="loadingIndicator" class="flex justify-center items-center mb-4 hidden">
+                <p class="mr-2">Processing feedback</p>
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+            </div>
+            <p id="analysisResult">Analysis data will be shown here.</p>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("feedbackForm").addEventListener("submit", function(e) {
+            e.preventDefault(); // Prevent the default form submission
 
-    <script type="text/javascript">
-      var connected = false;
-      var socket;
+            // Display loading indicator
+            document.getElementById("loadingIndicator").classList.remove("hidden");
 
-      $( document ).ready(function() {
-          connect();
-          $("#send").click(sendMessage);
+            // Convert age to a number if it's not empty, otherwise default to 0
+            var age = document.getElementById("age").value.trim() === "" ? 0 : parseInt(document.getElementById("age").value);
+            var gender = document.getElementById("gender").value;
+            var country = document.getElementById("country").value;
+            var feedback = document.getElementById("feedback").value;
 
-          $("#name").keypress(function(event){
-              if(event.keyCode == 13 || event.which == 13) {
-                  connect();
-              }
-          });
+            // gender and country are already strings, no need for additional conversion
 
-          $("#msg").keypress(function(event) {
-              if(event.keyCode == 13 || event.which == 13) {
-                  sendMessage();
-              }
-          });
+            feedback = feedback.trim(); // No need for default value as textarea always has content
 
-        $("#chat").change(function() {
-            scrollToBottom();
-          });
+            var feedbackData = {
+                age: age,
+                gender: gender,
+                country: country,
+                feedback: feedback
+            };
 
-          $("#name").focus();
-      });
+            console.log("Sending ", feedbackData);
 
-      var connect = function() {
-          if (! connected) {
-              socket = new WebSocket("ws://" + location.host + "/processfeedback");
-              socket.onopen = function() {
-                  connected = true;
-                  console.log("Connected to the web socket");
-                  $("#send").attr("disabled", false);
-                  $("#connect").attr("disabled", true);
-                  $("#name").attr("disabled", true);
-                  $("#msg").focus();
-              };
-              socket.onmessage =function(m) {
-                  console.log("Got message: " + m.data);
-                  $("#chat").append(m.data + "\n");
-                  scrollToBottom();
-              };
-          }
-      };
-
-      var sendMessage = function() {
-          if (connected) {
-              var value = $("#msg").val();
-              console.log("Sending " + value);
-              socket.send(value);
-              $("#msg").val("");
-          }
-      };
-
-      var scrollToBottom = function () {
-        $('#chat').scrollTop($('#chat')[0].scrollHeight);
-      };
-
-    </script>
+            // Replace 'your-endpoint-url' with your actual endpoint URL
+            fetch('http://localhost:8080/feedbackprocessor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(feedbackData),
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                     return response.text().then(errorData => {
+                        let errorMessage = errorData.message || 'Unknown error occurred';
+                        throw new Error(errorMessage);
+                     });
+                }
+            })
+            .then(data => {
+                console.log('Success:', data);
+                document.getElementById("loadingIndicator").classList.add("hidden");
+                document.getElementById("analysisResult").innerText = JSON.stringify(data);
+                // Optionally clear the form fields here
+                document.getElementById("feedbackForm").reset();
+            })
+            .catch((error) => {
+                console.error('Error:', error.message);
+                document.getElementById("loadingIndicator").classList.add("hidden");
+                document.getElementById("analysisResult").innerText = 'Error occurred while processing feedback: ' + error.message;
+            });
+        });
+    });
+</script>
 </body>
-
 </html>
