@@ -28,7 +28,7 @@ enum Tag {
 
 public class AtomicFeedback {
     @Description("to be left empty")
-    private List<String> solutions;
+    public List<String> solutions;
     @Description("""
             all relevant topic tags, picked strictly from this list:
                 examples,
@@ -44,19 +44,29 @@ public class AtomicFeedback {
                 boredom,
                 complexity
             """)
-    private List<Tag> tags;
+    public List<Tag> tags;
     @Description("best applicable feedback category")
-    private Category category;
+    public Category category;
     @Description("number: % of urgency, ranging from 0 (no urgence whatsoever) to 100 (needs fixing in this hour). should be " +
             "0 for positive feedback")
-    private int urgency;
+    public int urgency;
     @Description("number, % of severity, ranging from 0 (no problem whatsoever) to 100 (person(s) will die if this is not " +
             "fixed). should be 0 for positive feedback")
-    private int severity;
+    public int severity;
     @Description("number, % of people in the scope that are estimated to be affected by this same problem or solution.")
-    private int impact;
+    public int impact;
     @Description("the literal part(s) of the original UserFeedback that is relevant for this AtomicFeedback part")
-    private String feedback;
+    public String feedback;
+
+    public AtomicFeedback(List<Tag> tags, Category category,
+                          int urgency, int severity, int impact, String feedback) {
+        this.tags = tags;
+        this.category = category;
+        this.urgency = urgency;
+        this.severity = severity;
+        this.impact = impact;
+        this.feedback = feedback;
+    }
 
     public String prettyPrint() {
         return "\nAtomicFeedback{" +
