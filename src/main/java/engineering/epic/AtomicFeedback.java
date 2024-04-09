@@ -58,16 +58,6 @@ public class AtomicFeedback {
     @Description("the literal part(s) of the original UserFeedback that is relevant for this AtomicFeedback part")
     public String feedback;
 
-    public AtomicFeedback(List<Tag> tags, Category category,
-                          int urgency, int severity, int impact, String feedback) {
-        this.tags = tags;
-        this.category = category;
-        this.urgency = urgency;
-        this.severity = severity;
-        this.impact = impact;
-        this.feedback = feedback;
-    }
-
     public String prettyPrint() {
         return "\nAtomicFeedback{" +
                 "\n\tsolutions=" + solutions +

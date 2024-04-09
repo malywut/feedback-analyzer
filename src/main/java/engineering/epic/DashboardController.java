@@ -70,30 +70,30 @@ public class DashboardController {
 //        feedback3.feedback = "The food was really crap.";
 
         AtomicFeedback[] feedbacks = new AtomicFeedback[]{
-                new AtomicFeedback(Arrays.asList(Tag.inspiration, Tag.usefulness, Tag.examples), Category.PositiveFeedback, 0, 0, 0, "Excellent workshop content, really very interesting to take home and continue to work on."),
-                new AtomicFeedback(Arrays.asList(Tag.tempo, Tag.complexity), Category.Problem, 70, 60, 50, "The tempo of the workshop was a little high, I could hardly follow by times."),
-                new AtomicFeedback(Collections.singletonList(Tag.catering), Category.Problem, 60, 20, 100, "The food was really crap."),
-                new AtomicFeedback(Arrays.asList(Tag.educational_value), Category.PositiveFeedback, 0, 0, 0, "The practical examples were extremely helpful, great learning experience."),
-                new AtomicFeedback(Arrays.asList(Tag.room_environment), Category.Problem, 40, 50, 70, "The room was too cold, and the seating was uncomfortable."),
-                new AtomicFeedback(Arrays.asList(Tag.speakers, Tag.timing), Category.IdeaSuggestion, 30, 20, 60, "Speakers should have more time for Q&A sessions."),
-                new AtomicFeedback(Arrays.asList(Tag.boredom, Tag.timing), Category.Problem, 50, 40, 80, "Some sessions were too long, leading to loss of focus."),
-                new AtomicFeedback(Arrays.asList(Tag.readability, Tag.examples), Category.IdeaSuggestion, 20, 10, 30, "Workshop materials could be more engaging with interactive content."),
-                new AtomicFeedback(Arrays.asList(Tag.usefulness, Tag.educational_value), Category.PositiveFeedback, 0, 0, 0, "Loved the hands-on part, it was very educational."),
-                new AtomicFeedback(Arrays.asList(Tag.complexity), Category.Problem, 80, 70, 90, "Some concepts were too complex for beginners."),
-                new AtomicFeedback(Arrays.asList(Tag.catering), Category.Problem, 60, 10, 30, "Vegetarian options were limited."),
-                new AtomicFeedback(Arrays.asList(Tag.speakers), Category.PositiveFeedback, 0, 0, 0, "Speakers were knowledgeable and engaging."),
-                new AtomicFeedback(Arrays.asList(Tag.timing), Category.IdeaSuggestion, 25, 15, 50, "More breaks between sessions would be appreciated."),
-                new AtomicFeedback(Arrays.asList(Tag.room_environment), Category.Problem, 55, 45, 75, "The projector was not clear, making it hard to see the slides."),
-                new AtomicFeedback(Arrays.asList(Tag.inspiration), Category.PositiveFeedback, 0, 0, 0, "I am inspired to apply what I learned in my projects."),
-                new AtomicFeedback(Arrays.asList(Tag.tempo, Tag.complexity), Category.Problem, 65, 55, 85, "The fast pace made it difficult to grasp complex topics."),
-                new AtomicFeedback(Arrays.asList(Tag.educational_value), Category.PositiveFeedback, 0, 0, 0, "This workshop has significantly improved my understanding."),
-                new AtomicFeedback(Arrays.asList(Tag.catering), Category.IdeaSuggestion, 35, 25, 45, "Would love to see more healthy food options next time."),
-                new AtomicFeedback(Arrays.asList(Tag.boredom), Category.Problem, 45, 35, 55, "Some parts of the workshop could be made more interactive."),
-                new AtomicFeedback(Arrays.asList(Tag.readability, Tag.educational_value), Category.IdeaSuggestion, 20, 30, 40, "Suggest providing a glossary for technical terms used."),
-                new AtomicFeedback(Arrays.asList(Tag.timing, Tag.speakers), Category.Problem, 75, 65, 85, "Insufficient time allocated for some of the more interesting topics."),
-                new AtomicFeedback(Arrays.asList(Tag.complexity), Category.IdeaSuggestion, 10, 50, 60, "Consider beginner and advanced tracks for future workshops."),
-                new AtomicFeedback(Arrays.asList(Tag.inspiration, Tag.usefulness), Category.PositiveFeedback, 0, 0, 0, "The workshop content was practical and immediately applicable."),
-                new AtomicFeedback(Arrays.asList(Tag.room_environment), Category.Problem, 50, 60, 70, "Acoustics in the room made it hard to hear the speakers.")
+                generateAtomicFeedback(Arrays.asList(Tag.inspiration, Tag.usefulness, Tag.examples), Category.PositiveFeedback, 0, 0, 0, "Excellent workshop content, really very interesting to take home and continue to work on."),
+                generateAtomicFeedback(Arrays.asList(Tag.tempo, Tag.complexity), Category.Problem, 70, 60, 50, "The tempo of the workshop was a little high, I could hardly follow by times."),
+                generateAtomicFeedback(Collections.singletonList(Tag.catering), Category.Problem, 60, 20, 100, "The food was really crap."),
+                generateAtomicFeedback(Arrays.asList(Tag.educational_value), Category.PositiveFeedback, 0, 0, 0, "The practical examples were extremely helpful, great learning experience."),
+                generateAtomicFeedback(Arrays.asList(Tag.room_environment), Category.Problem, 40, 50, 70, "The room was too cold, and the seating was uncomfortable."),
+                generateAtomicFeedback(Arrays.asList(Tag.speakers, Tag.timing), Category.IdeaSuggestion, 30, 20, 60, "Speakers should have more time for Q&A sessions."),
+                generateAtomicFeedback(Arrays.asList(Tag.boredom, Tag.timing), Category.Problem, 50, 40, 80, "Some sessions were too long, leading to loss of focus."),
+                generateAtomicFeedback(Arrays.asList(Tag.readability, Tag.examples), Category.IdeaSuggestion, 20, 10, 30, "Workshop materials could be more engaging with interactive content."),
+                generateAtomicFeedback(Arrays.asList(Tag.usefulness, Tag.educational_value), Category.PositiveFeedback, 0, 0, 0, "Loved the hands-on part, it was very educational."),
+                generateAtomicFeedback(Arrays.asList(Tag.complexity), Category.Problem, 80, 70, 90, "Some concepts were too complex for beginners."),
+                generateAtomicFeedback(Arrays.asList(Tag.catering), Category.Problem, 60, 10, 30, "Vegetarian options were limited."),
+                generateAtomicFeedback(Arrays.asList(Tag.speakers), Category.PositiveFeedback, 0, 0, 0, "Speakers were knowledgeable and engaging."),
+                generateAtomicFeedback(Arrays.asList(Tag.timing), Category.IdeaSuggestion, 25, 15, 50, "More breaks between sessions would be appreciated."),
+                generateAtomicFeedback(Arrays.asList(Tag.room_environment), Category.Problem, 55, 45, 75, "The projector was not clear, making it hard to see the slides."),
+                generateAtomicFeedback(Arrays.asList(Tag.inspiration), Category.PositiveFeedback, 0, 0, 0, "I am inspired to apply what I learned in my projects."),
+                generateAtomicFeedback(Arrays.asList(Tag.tempo, Tag.complexity), Category.Problem, 65, 55, 85, "The fast pace made it difficult to grasp complex topics."),
+                generateAtomicFeedback(Arrays.asList(Tag.educational_value), Category.PositiveFeedback, 0, 0, 0, "This workshop has significantly improved my understanding."),
+                generateAtomicFeedback(Arrays.asList(Tag.catering), Category.IdeaSuggestion, 35, 25, 45, "Would love to see more healthy food options next time."),
+                generateAtomicFeedback(Arrays.asList(Tag.boredom), Category.Problem, 45, 35, 55, "Some parts of the workshop could be made more interactive."),
+                generateAtomicFeedback(Arrays.asList(Tag.readability, Tag.educational_value), Category.IdeaSuggestion, 20, 30, 40, "Suggest providing a glossary for technical terms used."),
+                generateAtomicFeedback(Arrays.asList(Tag.timing, Tag.speakers), Category.Problem, 75, 65, 85, "Insufficient time allocated for some of the more interesting topics."),
+                generateAtomicFeedback(Arrays.asList(Tag.complexity), Category.IdeaSuggestion, 10, 50, 60, "Consider beginner and advanced tracks for future workshops."),
+                generateAtomicFeedback(Arrays.asList(Tag.inspiration, Tag.usefulness), Category.PositiveFeedback, 0, 0, 0, "The workshop content was practical and immediately applicable."),
+                generateAtomicFeedback(Arrays.asList(Tag.room_environment), Category.Problem, 50, 60, 70, "Acoustics in the room made it hard to hear the speakers.")
         };
 
         //List<AtomicFeedback> feedbacks = fetchFeedbacks(); // TODO Implement this method to fetch feedbacks
@@ -101,5 +101,17 @@ public class DashboardController {
         DashboardResponse response = new DashboardResponse(analysis, Arrays.stream(feedbacks).toList());
 
         return response;
+    }
+
+    public AtomicFeedback generateAtomicFeedback(List<Tag> tags, Category category,
+                                                 int urgency, int severity, int impact, String feedback) {
+        AtomicFeedback result = new AtomicFeedback();
+        result.tags = tags;
+        result.category = category;
+        result.urgency = urgency;
+        result.severity = severity;
+        result.impact = impact;
+        result.feedback = feedback;
+        return result;
     }
 }

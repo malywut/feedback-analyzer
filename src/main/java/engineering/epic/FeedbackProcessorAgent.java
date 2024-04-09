@@ -66,7 +66,6 @@ public class FeedbackProcessorAgent {
 
     @Transactional
     public static void persistFeedback(UserFeedback feedback) {
-        // TODO store in DB Assume UserFeedback extends PanacheEntity or similar JPA entity handling
-        // feedback.persist();
+        DbUtil.executePost(feedback);
     }
 }
