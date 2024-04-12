@@ -33,23 +33,22 @@
     </style>
 </head>
 <body>
-<div class="container mt-3">
+<div class="container">
+    <br/>
     <div class="row mb-3">
         <div class="col-12">
             <h2 class="text-center">Dashboard Chatbot</h2>
+            <p>Explore the whole feedback database with this AI Assistant</p>
         </div>
     </div>
     <div class="row">
-        <div class="col-12">
-            <div id="chat" class="mb-3"></div>
-            <div class="input-group">
-                <input type="text" id="msg" class="form-control" placeholder="Enter your message" aria-label="Recipient's username" aria-describedby="button-addon2">
-                <div class="input-group-append">
-                    <button class="btn btn-outline-secondary" type="button" id="send" disabled>Send</button>
-                </div>
-            </div>
-        </div>
+        <textarea class="col-md-8" id="chat"></textarea>
     </div>
+    <div class="row">
+        <input class="col-md-6" id="msg" type="text" placeholder="enter your message">
+        <button class="col-md-1 btn btn-primary" id="send" type="button" disabled>send</button>
+    </div>
+
     <h1 class="mt-5">Dashboard Analysis</h1>
     <div id="analysis-container" class="analysis-container"></div>
     <h1>Feedbacks</h1>

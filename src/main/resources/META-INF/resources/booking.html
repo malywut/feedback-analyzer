@@ -70,7 +70,7 @@
 
       var connect = function() {
           if (! connected) {
-              socket = new WebSocket("ws://" + location.host + "/processfeedback");
+              socket = new WebSocket("ws://" + location.host + "/api/chat");
               socket.onopen = function() {
                   connected = true;
                   console.log("Connected to the web socket");
