@@ -1,9 +1,11 @@
-package engineering.epic;
+package engineering.epic.aiservices;
 
 import dev.langchain4j.service.SystemMessage;
+import io.quarkiverse.langchain4j.RegisterAiService;
 
 import java.util.List;
 
+@RegisterAiService
 public interface FeedbackSplitterAIService {
     @SystemMessage("""
             Split the user feedback into coherent parts that treat a similar topic, that can then be addressed separately.

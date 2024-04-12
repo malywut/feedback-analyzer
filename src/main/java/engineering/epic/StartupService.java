@@ -4,13 +4,7 @@ import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Singleton;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
-
-import static engineering.epic.DbUtil.executeSqlScript;
+import static engineering.epic.util.DbUtil.executeSqlScript;
 
 @Singleton
 public class StartupService {

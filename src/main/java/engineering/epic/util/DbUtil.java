@@ -1,15 +1,16 @@
-package engineering.epic;
+package engineering.epic.util;
+
+import engineering.epic.datastorageobjects.Tag;
+import engineering.epic.datastorageobjects.UserFeedback;
+import engineering.epic.datastorageobjects.AtomicFeedback;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.net.URL;
 

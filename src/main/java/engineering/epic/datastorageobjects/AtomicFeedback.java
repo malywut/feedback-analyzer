@@ -1,30 +1,7 @@
-package engineering.epic;
+package engineering.epic.datastorageobjects;
 import dev.langchain4j.model.output.structured.Description;
 
 import java.util.List;
-
-// Enum for feedback categories
-enum Category {
-    IdeaSuggestion,
-    Problem,
-    PositiveFeedback,
-    Undefined
-}
-
-enum Tag {
-    examples,
-    inspiration,
-    tempo,
-    usefulness,
-    educational_value,
-    room_environment,
-    catering,
-    speakers,
-    timing,
-    readability,
-    boredom,
-    complexity
-}
 
 public class AtomicFeedback {
     @Description("to be left empty")

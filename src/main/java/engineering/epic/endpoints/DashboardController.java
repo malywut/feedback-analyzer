@@ -1,17 +1,19 @@
-package engineering.epic;
+package engineering.epic.endpoints;
 
+import engineering.epic.datastorageobjects.*;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import java.util.*;
 
-@Path("/dashboard")
+@Path("api/dashboard")
 public class DashboardController {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public DashboardResponse getDashboardData() {
+
+        System.out.println("Received call to fetch dashboard data...");
 
         // TODO get the values from the database
         // TODO clean up the enum to have consequent capitalization

@@ -4,6 +4,12 @@ import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiModelName;
 import dev.langchain4j.service.AiServices;
+import engineering.epic.aiservices.FeedbackAnalyzerAgentAIService;
+import engineering.epic.aiservices.FeedbackSplitterAIService;
+import engineering.epic.datastorageobjects.AtomicFeedback;
+import engineering.epic.datastorageobjects.FeedbackDTO;
+import engineering.epic.datastorageobjects.UserFeedback;
+import engineering.epic.util.DbUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
@@ -13,7 +19,7 @@ import java.util.List;
 @ApplicationScoped
 public class FeedbackProcessorAgent {
 
-    public static String processFeedback(FeedbackDTO dto) throws Exception {
+    public static UserFeedback processFeedback(FeedbackDTO dto) throws Exception {
         UserFeedback feedback = new UserFeedback(
                 calculateBirthYear(dto.getAge()),
                 dto.getCountry(),
@@ -39,8 +45,8 @@ public class FeedbackProcessorAgent {
 
         List<String> coherentFeedbackParts = splitter.generateAtomicFeedbackComponents(feedback.getFeedback());
 
-        FeedbackAnalyzerAgent analyzer =
-                AiServices.create(FeedbackAnalyzerAgent.class, model);
+        FeedbackAnalyzerAgentAIService analyzer =
+                AiServices.create(FeedbackAnalyzerAgentAIService.class, model);
         for(String coherentFeedbackPart : coherentFeedbackParts) {
             try {
                 AtomicFeedback atomicFeedback = analyzer.generateAtomicFeedbackComponents(coherentFeedbackPart);
@@ -56,8 +62,7 @@ public class FeedbackProcessorAgent {
         // Persist feedback to the database
         persistFeedback(feedback);
 
-        // TODO make JSON
-        return feedback.toString();
+        return feedback;
     }
 
     private static int calculateBirthYear(int age) {

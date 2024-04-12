@@ -1,4 +1,4 @@
-package engineering.epic;
+package engineering.epic.datastorageobjects;
 
 public class FeedbackDTO {
     private int age;
