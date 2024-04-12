@@ -1,13 +1,24 @@
-INSERT INTO TAG (name) VALUES
-('examples'),
-('inspiration'),
-('tempo'),
-('usefulness'),
-('educational_value'),
-('room_environment'),
-('catering'),
-('speakers'),
-('timing'),
-('readability'),
-('boredom'),
-('complexity');
+INSERT INTO Tag (name)
+SELECT 'Examples' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'Examples')
+UNION ALL
+SELECT 'Inspiration' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'Inspiration')
+UNION ALL
+SELECT 'Tempo' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'Tempo')
+UNION ALL
+SELECT 'Usefulness' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'Usefulness')
+UNION ALL
+SELECT 'EducationalValue' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'EducationalValue')
+UNION ALL
+SELECT 'RoomEnvironment' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'RoomEnvironment')
+UNION ALL
+SELECT 'Catering' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'Catering')
+UNION ALL
+SELECT 'Speakers' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'Speakers')
+UNION ALL
+SELECT 'Timing' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'Timing')
+UNION ALL
+SELECT 'Readability' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'Readability')
+UNION ALL
+SELECT 'Boredom' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'Boredom')
+UNION ALL
+SELECT 'Complexity' WHERE NOT EXISTS (SELECT 1 FROM Tag WHERE name = 'Complexity');

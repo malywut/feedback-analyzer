@@ -8,18 +8,18 @@ public class AtomicFeedback {
     public List<String> solutions;
     @Description("""
             all relevant topic tags, picked strictly from this list:
-                examples,
-                inspiration,
-                tempo,
-                usefulness,
-                educational_value,
-                room_environment,
-                catering,
-                speakers,
-                timing,
-                readability,
-                boredom,
-                complexity
+                Examples,
+                Inspiration,
+                Tempo,
+                Usefulness,
+                EducationalValue,
+                RoomEnvironment,
+                Catering,
+                Speakers,
+                Timing,
+                Readability,
+                Boredom,
+                Complexity
             """)
     public List<Tag> tags;
     @Description("best applicable feedback category")
@@ -32,7 +32,7 @@ public class AtomicFeedback {
     public int severity;
     @Description("number, % of people in the scope that are estimated to be affected by this same problem or solution.")
     public int impact;
-    @Description("the literal part(s) of the original UserFeedback that is relevant for this AtomicFeedback part")
+    @Description("the literal part(s) of the original UserFeedback that is relevant for this AtomicFeedback part. Use the literal words of the user")
     public String feedback;
 
     public String prettyPrint() {

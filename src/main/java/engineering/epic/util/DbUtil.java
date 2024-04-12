@@ -1,8 +1,10 @@
 package engineering.epic.util;
 
+import engineering.epic.datastorageobjects.Category;
 import engineering.epic.datastorageobjects.Tag;
 import engineering.epic.datastorageobjects.UserFeedback;
 import engineering.epic.datastorageobjects.AtomicFeedback;
+import engineering.epic.endpoints.DashboardController;
 
 import java.nio.file.Files;
 import java.sql.Connection;
@@ -13,9 +15,32 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.nio.file.Paths;
 import java.net.URL;
+import java.util.*;
 
 public class DbUtil {
     public static final String DB_URL = "jdbc:sqlite:src/main/resources/stored_feedback.db";
+    public static final String INTLOW_QUERY = "SELECT COUNT(*) FROM AtomicFeedback WHERE ? < 25";
+    public static final String INTHIGH_QUERY = "SELECT COUNT(*) FROM AtomicFeedback WHERE ? > 75";
+    public static final String INTMID_QUERY = "SELECT COUNT(*) FROM AtomicFeedback WHERE ? >= 25 AND ? <= 75";
+
+    public static String loadString(String query, String variable) throws SQLException {
+        String result = "";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, variable);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    result = rs.getString(1);
+                } else {
+                    return "";
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error occurred with query [" + query + "]: " + e.getMessage());
+            throw new SQLException("SQL error occurred with query [" + query + "]", e);
+        }
+        return result;
+    }
 
     public static void executeSqlScript(String resourcePath) {
         try (Connection conn = DriverManager.getConnection(DB_URL);
@@ -27,14 +52,18 @@ public class DbUtil {
             // Simple split by ";" - might need refinement for more complex scripts
             String[] sqlStatements = sql.split(";");
             for (String statement : sqlStatements) {
-                if(statement.trim().isEmpty()) {
+                if (statement.trim().isEmpty()) {
                     continue;
                 }
-                stmt.execute(statement.trim());
+                try {
+                    stmt.execute(statement.trim());
+                } catch (SQLException e) {
+                    throw new SQLException("Error executing query '" + statement + "' from script " + resourcePath + ": " + e.getMessage());
+                }
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error executing SQL script" + resourcePath + ": " + e.getMessage());
         }
     }
 
@@ -127,7 +156,7 @@ public class DbUtil {
 
                         System.out.println("Inserted AtomicFeedback link to Tag: " + affectedRows + " for tag " + tagName.toString() + " with ID " + tagId);
                     }
-                } catch (SQLException ex){
+                } catch (SQLException ex) {
                     System.out.println(ex.getMessage());
                     // TODO better error handling
                 }
@@ -157,6 +186,176 @@ public class DbUtil {
             throw new IllegalArgumentException("Resource not found: " + resourcePath);
         }
         return Files.readString(Paths.get(resource.toURI()));
+    }
+
+    public static Integer loadIntHigh(String attribute) {
+        if (!attribute.equals("severity") && !attribute.equals("urgency") && !attribute.equals("impact")) {
+            throw new IllegalArgumentException("Invalid attribute specified. Choose 'severity', 'urgency', or 'impact'.");
+        }
+
+        String query = String.format("SELECT COUNT(*) FROM AtomicFeedback WHERE %s > 75", attribute);
+
+        int count = 0;
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error occurred with query [" + query + "]: " + e.getMessage());
+            throw new RuntimeException("SQL error occurred with query [" + query + "]", e);
+        }
+
+        return count;
+    }
+
+    public static Integer loadIntMid(String attribute) {
+        if (!attribute.equals("severity") && !attribute.equals("urgency") && !attribute.equals("impact")) {
+            throw new IllegalArgumentException("Invalid attribute specified. Choose 'severity', 'urgency', or 'impact'.");
+        }
+
+        String query = String.format("SELECT COUNT(*) FROM AtomicFeedback WHERE %s >= 25 AND %s <= 75", attribute, attribute);
+
+        int count = 0;
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error occurred with query [" + query + "]: " + e.getMessage());
+            throw new RuntimeException("SQL error occurred with query [" + query + "]", e);
+        }
+
+        return count;
+    }
+
+    public static Integer loadIntLow(String attribute) {
+        if (!attribute.equals("severity") && !attribute.equals("urgency") && !attribute.equals("impact")) {
+            throw new IllegalArgumentException("Invalid attribute specified. Choose 'severity', 'urgency', or 'impact'.");
+        }
+
+        String query = String.format("SELECT COUNT(*) FROM AtomicFeedback WHERE %s < 25", attribute);
+
+        int count = 0;
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error occurred with query [" + query + "]: " + e.getMessage());
+            throw new RuntimeException("SQL error occurred with query [" + query + "]", e);
+        }
+
+        return count;
+    }
+
+    public static Map<String, Integer> getTagCounts() {
+        String query = """
+                SELECT Tag.name, COUNT(AtomicFeedback_Tag.tagId) AS times_attributed
+                FROM Tag
+                INNER JOIN AtomicFeedback_Tag ON Tag.id = AtomicFeedback_Tag.tagId
+                GROUP BY Tag.name
+                ORDER BY times_attributed DESC;
+                """;
+
+        Map<String, Integer> tagCounts = new HashMap<>();
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                String tagName = rs.getString("name");
+                int count = rs.getInt("times_attributed");
+                tagCounts.put(tagName, count);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error occurred with query [" + query + "]: " + e.getMessage());
+            throw new RuntimeException("SQL error occurred with query [" + query + "]", e);
+        }
+
+        return tagCounts;
+    }
+
+    public static List<AtomicFeedback> fetchFeedbacks() {
+        List<AtomicFeedback> feedbacks = new ArrayList<>();
+        String query = """
+                SELECT 
+                    af.category,
+                    af.severity,
+                    af.urgency,
+                    af.impact,
+                    af.feedback,
+                    GROUP_CONCAT(t.name, ', ') AS tags
+                FROM 
+                    AtomicFeedback af
+                LEFT JOIN 
+                    AtomicFeedback_Tag aft ON af.id = aft.atomicFeedbackId
+                LEFT JOIN 
+                    Tag t ON aft.tagId = t.id
+                GROUP BY 
+                    af.id
+                ORDER BY 
+                    af.id
+                LIMIT 300;
+                """;
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                Category category = Category.valueOf(rs.getString("category"));
+                int urgency = rs.getInt("urgency");
+                int severity = rs.getInt("severity");
+                int impact = rs.getInt("impact");
+                String feedbackText = rs.getString("feedback");
+                String tagNames = rs.getString("tags");
+                List<Tag> tags = new ArrayList<>();
+
+                if (tagNames != null) {
+                    Arrays.stream(tagNames.split(",\\s*"))
+                            .forEach(tagName -> tags.add(Tag.valueOf(tagName.trim())));
+                }
+
+                AtomicFeedback atomicFeedback = DashboardController.generateAtomicFeedback(tags, category, urgency, severity, impact, feedbackText);
+                feedbacks.add(atomicFeedback);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error occurred when fetching feedbacks: " + e.getMessage());
+            throw new RuntimeException("SQL error occurred when fetching feedbacks", e);
+        }
+
+        return feedbacks;
+    }
+
+
+    public static Map<String, Integer> getCategoryCounts() {
+        String query = "SELECT category, COUNT(*) AS count FROM AtomicFeedback GROUP BY category";
+        Map<String, Integer> categoryCounts = new HashMap<>();
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                String category = rs.getString("category");
+                Integer count = rs.getInt("count");
+                categoryCounts.put(category, count);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error occurred with query [" + query + "]: " + e.getMessage());
+            throw new RuntimeException("SQL error occurred with query [" + query + "]", e);
+        }
+        return categoryCounts;
     }
 
 }
