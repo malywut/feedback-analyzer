@@ -30,7 +30,6 @@ public class DashboardController {
 
         Map<String, Integer> tagCounts = DbUtil.getTagCounts();
 
-        // TODO make upper casing use coherent
         List<AnalysisValue> analysis = List.of(
                 new AnalysisValue("severity", Map.of("high", sevHigh, "medium", sevMid, "low", sevLow)),
                 new AnalysisValue("urgency", Map.of("high", urgHigh, "medium", urgMid, "low", urgLow)),
