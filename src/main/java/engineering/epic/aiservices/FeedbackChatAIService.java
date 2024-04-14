@@ -14,6 +14,6 @@ public interface FeedbackChatAIService {
            out of the feedback data that was collected during 
             """
     })
-    String chat(@MemoryId Object session, @UserMessage String userMessage);
+    String chat(@MemoryId Object sessionId, @UserMessage String userMessage);
 }
 
