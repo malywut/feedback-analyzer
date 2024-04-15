@@ -2,13 +2,17 @@ package engineering.epic.endpoints;
 
 import engineering.epic.datastorageobjects.*;
 import engineering.epic.util.DbUtil;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.*;
 
 @Path("api/dashboard")
 public class DashboardController {
+    @Inject
+    DbUtil dbUtil;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -18,26 +22,26 @@ public class DashboardController {
 
         // severity, urgency, impact: high = >75, medium = 25-75, low = <25
         Integer sevHigh, sevMid, sevLow, urgHigh, urgMid, urgLow, impHigh, impMid, impLow;
-        sevHigh = DbUtil.loadIntHigh("severity");
-        sevMid = DbUtil.loadIntMid("severity");
-        sevLow = DbUtil.loadIntLow("severity");
-        urgHigh = DbUtil.loadIntHigh("urgency");
-        urgMid = DbUtil.loadIntMid("urgency");
-        urgLow = DbUtil.loadIntLow("urgency");
-        impHigh = DbUtil.loadIntHigh("impact");
-        impMid = DbUtil.loadIntMid("impact");
-        impLow = DbUtil.loadIntLow("impact");
+        sevHigh = dbUtil.loadIntHigh("severity");
+        sevMid = dbUtil.loadIntMid("severity");
+        sevLow = dbUtil.loadIntLow("severity");
+        urgHigh = dbUtil.loadIntHigh("urgency");
+        urgMid = dbUtil.loadIntMid("urgency");
+        urgLow = dbUtil.loadIntLow("urgency");
+        impHigh = dbUtil.loadIntHigh("impact");
+        impMid = dbUtil.loadIntMid("impact");
+        impLow = dbUtil.loadIntLow("impact");
 
-        Map<String, Integer> tagCounts = DbUtil.getTagCounts();
+        Map<String, Integer> tagCounts = dbUtil.getTagCounts();
 
         List<AnalysisValue> analysis = List.of(
                 new AnalysisValue("severity", Map.of("high", sevHigh, "medium", sevMid, "low", sevLow)),
                 new AnalysisValue("urgency", Map.of("high", urgHigh, "medium", urgMid, "low", urgLow)),
                 new AnalysisValue("impact", Map.of("high", impHigh, "medium", impMid, "low", impLow)),
                 new AnalysisValue("tags", tagCounts),
-                new AnalysisValue("categories", DbUtil.getCategoryCounts()));
+                new AnalysisValue("categories", dbUtil.getCategoryCounts()));
 
-        List<AtomicFeedback> feedbacks = DbUtil.fetchFeedbacks();
+        List<AtomicFeedback> feedbacks = dbUtil.fetchFeedbacks();
 
         DashboardResponse response = new DashboardResponse(analysis, feedbacks);
 

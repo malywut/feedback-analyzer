@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 function fetchData() {
-    fetch('http://localhost:8080/api/dashboard', {
+    fetch('/api/dashboard', {
         method: 'GET',
         headers: {
             'Accept': 'application/json'

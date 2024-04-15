@@ -5,7 +5,10 @@ import engineering.epic.datastorageobjects.Tag;
 import engineering.epic.datastorageobjects.UserFeedback;
 import engineering.epic.datastorageobjects.AtomicFeedback;
 import engineering.epic.endpoints.DashboardController;
+import jakarta.enterprise.context.ApplicationScoped;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -17,15 +20,19 @@ import java.nio.file.Paths;
 import java.net.URL;
 import java.util.*;
 
+@ApplicationScoped
 public class DbUtil {
-    public static final String DB_URL = "jdbc:sqlite:src/main/resources/stored_feedback.db";
+    public static final String DB_URL_NOPE = "jdbc:sqlite:src/main/resources/stored_feedback.db";
     public static final String INTLOW_QUERY = "SELECT COUNT(*) FROM AtomicFeedback WHERE ? < 25";
     public static final String INTHIGH_QUERY = "SELECT COUNT(*) FROM AtomicFeedback WHERE ? > 75";
     public static final String INTMID_QUERY = "SELECT COUNT(*) FROM AtomicFeedback WHERE ? >= 25 AND ? <= 75";
 
-    public static String loadString(String query, String variable) throws SQLException {
+    @ConfigProperty(name = "app.database.jdbc.url")
+    String dbUrl;
+
+    public String loadString(String query, String variable) throws SQLException {
         String result = "";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(this.dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setString(1, variable);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -42,8 +49,8 @@ public class DbUtil {
         return result;
     }
 
-    public static void executeSqlScript(String resourcePath) {
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+    public void executeSqlScript(String resourcePath) {
+        try (Connection conn = DriverManager.getConnection(this.dbUrl);
              Statement stmt = conn.createStatement()) {
 
             // Read SQL from the resource file
@@ -63,11 +70,12 @@ public class DbUtil {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("Error executing SQL script" + resourcePath + ": " + e.getMessage());
         }
     }
 
-    public static void executePost(UserFeedback feedback) {
+    public void executePost(UserFeedback feedback) {
         // SQL statement for inserting UserFeedback
         String insertUserFeedbackSQL = "INSERT INTO UserFeedback(birthYear, nationality, gender, feedback) VALUES(?,?,?,?)";
 
@@ -77,7 +85,7 @@ public class DbUtil {
         String retrieveTagID = "SELECT ID FROM Tag WHERE NAME = ?";
         String insertAtomicFeedbackTagSQL = "INSERT INTO AtomicFeedback_Tag (atomicFeedbackId, tagId) VALUES (?, ?);";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+        try (Connection conn = DriverManager.getConnection(this.dbUrl)) {
             // Start transaction
             conn.setAutoCommit(false);
 
@@ -157,6 +165,7 @@ public class DbUtil {
                         System.out.println("Inserted AtomicFeedback link to Tag: " + affectedRows + " for tag " + tagName.toString() + " with ID " + tagId);
                     }
                 } catch (SQLException ex) {
+                    ex.printStackTrace();
                     System.out.println(ex.getMessage());
                     // TODO better error handling
                 }
@@ -170,25 +179,27 @@ public class DbUtil {
             System.out.println(e.getMessage());
             e.printStackTrace();
             // If there is an exception, attempt to roll back changes
-            try (Connection conn = DriverManager.getConnection(DB_URL)) {
+            try (Connection conn = DriverManager.getConnection(this.dbUrl)) {
                 System.err.print("Transaction is being rolled back");
                 conn.rollback();
             } catch (SQLException excep) {
+                e.printStackTrace();
                 // Handle any rollback errors
             }
         }
     }
 
-    public static String readResourceFileAsString(String resourcePath) throws Exception {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        URL resource = classLoader.getResource(resourcePath);
-        if (resource == null) {
-            throw new IllegalArgumentException("Resource not found: " + resourcePath);
+    public String readResourceFileAsString(String resourcePath) throws Exception {
+
+        try (InputStream resource = this.getClass().getClassLoader().getResourceAsStream(resourcePath)) {
+            if (resource == null) {
+                throw new IllegalArgumentException("Resource not found: " + resourcePath);
+            }
+            return new String(resource.readAllBytes());
         }
-        return Files.readString(Paths.get(resource.toURI()));
     }
 
-    public static Integer loadIntHigh(String attribute) {
+    public Integer loadIntHigh(String attribute) {
         if (!attribute.equals("severity") && !attribute.equals("urgency") && !attribute.equals("impact")) {
             throw new IllegalArgumentException("Invalid attribute specified. Choose 'severity', 'urgency', or 'impact'.");
         }
@@ -196,7 +207,7 @@ public class DbUtil {
         String query = String.format("SELECT COUNT(*) FROM AtomicFeedback WHERE %s > 75", attribute);
 
         int count = 0;
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(this.dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {
 
@@ -204,6 +215,7 @@ public class DbUtil {
                 count = rs.getInt(1);
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             System.err.println("SQL error occurred with query [" + query + "]: " + e.getMessage());
             throw new RuntimeException("SQL error occurred with query [" + query + "]", e);
         }
@@ -211,7 +223,7 @@ public class DbUtil {
         return count;
     }
 
-    public static Integer loadIntMid(String attribute) {
+    public Integer loadIntMid(String attribute) {
         if (!attribute.equals("severity") && !attribute.equals("urgency") && !attribute.equals("impact")) {
             throw new IllegalArgumentException("Invalid attribute specified. Choose 'severity', 'urgency', or 'impact'.");
         }
@@ -219,7 +231,7 @@ public class DbUtil {
         String query = String.format("SELECT COUNT(*) FROM AtomicFeedback WHERE %s >= 25 AND %s <= 75", attribute, attribute);
 
         int count = 0;
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(this.dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {
 
@@ -234,7 +246,7 @@ public class DbUtil {
         return count;
     }
 
-    public static Integer loadIntLow(String attribute) {
+    public Integer loadIntLow(String attribute) {
         if (!attribute.equals("severity") && !attribute.equals("urgency") && !attribute.equals("impact")) {
             throw new IllegalArgumentException("Invalid attribute specified. Choose 'severity', 'urgency', or 'impact'.");
         }
@@ -242,7 +254,7 @@ public class DbUtil {
         String query = String.format("SELECT COUNT(*) FROM AtomicFeedback WHERE %s < 25", attribute);
 
         int count = 0;
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(this.dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {
 
@@ -257,7 +269,7 @@ public class DbUtil {
         return count;
     }
 
-    public static Map<String, Integer> getTagCounts() {
+    public Map<String, Integer> getTagCounts() {
         String query = """
                 SELECT Tag.name, COUNT(AtomicFeedback_Tag.tagId) AS times_attributed
                 FROM Tag
@@ -268,7 +280,7 @@ public class DbUtil {
 
         Map<String, Integer> tagCounts = new HashMap<>();
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(this.dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {
 
@@ -285,7 +297,7 @@ public class DbUtil {
         return tagCounts;
     }
 
-    public static List<AtomicFeedback> fetchFeedbacks() {
+    public List<AtomicFeedback> fetchFeedbacks() {
         List<AtomicFeedback> feedbacks = new ArrayList<>();
         String query = """
                 SELECT 
@@ -308,7 +320,7 @@ public class DbUtil {
                 LIMIT 300;
                 """;
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(this.dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {
 
@@ -338,11 +350,11 @@ public class DbUtil {
     }
 
 
-    public static Map<String, Integer> getCategoryCounts() {
+    public Map<String, Integer> getCategoryCounts() {
         String query = "SELECT category, COUNT(*) AS count FROM AtomicFeedback GROUP BY category";
         Map<String, Integer> categoryCounts = new HashMap<>();
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(this.dbUrl);
              PreparedStatement pstmt = conn.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {
 

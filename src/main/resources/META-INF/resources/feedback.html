@@ -72,7 +72,7 @@
 
             console.log("Sending ", feedbackData);
 
-            fetch('http://localhost:8080/api/feedbackprocessor', {
+            fetch('/api/feedbackprocessor', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(feedbackData),

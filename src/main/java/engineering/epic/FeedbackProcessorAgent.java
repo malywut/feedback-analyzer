@@ -11,15 +11,19 @@ import engineering.epic.datastorageobjects.FeedbackDTO;
 import engineering.epic.datastorageobjects.UserFeedback;
 import engineering.epic.util.DbUtil;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @ApplicationScoped
 public class FeedbackProcessorAgent {
+    @Inject
+    DbUtil dbUtil;
 
-    public static UserFeedback processFeedback(FeedbackDTO dto) throws Exception {
+    public UserFeedback processFeedback(FeedbackDTO dto) throws Exception {
         UserFeedback feedback = new UserFeedback(
                 calculateBirthYear(dto.getAge()),
                 dto.getCountry(),
@@ -70,7 +74,7 @@ public class FeedbackProcessorAgent {
     }
 
     @Transactional
-    public static void persistFeedback(UserFeedback feedback) {
-        DbUtil.executePost(feedback);
+    public void persistFeedback(UserFeedback feedback) {
+        dbUtil.executePost(feedback);
     }
 }
