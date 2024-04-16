@@ -4,22 +4,28 @@ import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiModelName;
 import dev.langchain4j.service.AiServices;
-import engineering.epic.aiservices.FeedbackAnalyzerAgentAIService;
+import engineering.epic.aiservices.FeedbackAnalyserAIService;
 import engineering.epic.aiservices.FeedbackSplitterAIService;
+import engineering.epic.databases.FeedbackEmbeddingStore;
 import engineering.epic.datastorageobjects.AtomicFeedback;
 import engineering.epic.datastorageobjects.FeedbackDTO;
 import engineering.epic.datastorageobjects.UserFeedback;
-import engineering.epic.util.DbUtil;
+import engineering.epic.databases.FeedbackDatabase;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @ApplicationScoped
-public class FeedbackProcessorAgent {
+public class FeedbackProcessor {
+    @Inject
+    FeedbackDatabase dbUtil;
+    @Inject
+    FeedbackEmbeddingStore embeddingStore;
 
-    public static UserFeedback processFeedback(FeedbackDTO dto) throws Exception {
+    public UserFeedback processFeedback(FeedbackDTO dto) throws Exception {
         UserFeedback feedback = new UserFeedback(
                 calculateBirthYear(dto.getAge()),
                 dto.getCountry(),
@@ -45,15 +51,25 @@ public class FeedbackProcessorAgent {
 
         List<String> coherentFeedbackParts = splitter.generateAtomicFeedbackComponents(feedback.getFeedback());
 
-        FeedbackAnalyzerAgentAIService analyzer =
-                AiServices.create(FeedbackAnalyzerAgentAIService.class, model);
+        FeedbackAnalyserAIService analyzer =
+                AiServices.create(FeedbackAnalyserAIService.class, model);
         for(String coherentFeedbackPart : coherentFeedbackParts) {
             try {
                 AtomicFeedback atomicFeedback = analyzer.generateAtomicFeedbackComponents(coherentFeedbackPart);
                 feedback.addAtomicFeedback(atomicFeedback);
             } catch (Exception e) {
                 System.out.println("Error processing feedback: " + e.getMessage());
-                throw new Exception("Error while processing feedback parts: " + e.getMessage());
+                e.printStackTrace();
+                System.out.println("Retrying");
+                try {
+                    AtomicFeedback atomicFeedback = analyzer.generateAtomicFeedbackComponents(coherentFeedbackPart);
+                    feedback.addAtomicFeedback(atomicFeedback);
+                } catch (Exception e2) {
+                    System.out.println("Second error processing feedback: " + e2.getMessage());
+                    e2.printStackTrace();
+                    System.out.println("Skipping");
+                    // TODO add the feedback part nonetheless even if analysis failed
+                }
             }
         }
 
@@ -61,6 +77,9 @@ public class FeedbackProcessorAgent {
 
         // Persist feedback to the database
         persistFeedback(feedback);
+
+        // Add feedback + embedding to the embedding store
+        embeddingStore.addFeedback(feedback);
 
         return feedback;
     }
@@ -70,7 +89,7 @@ public class FeedbackProcessorAgent {
     }
 
     @Transactional
-    public static void persistFeedback(UserFeedback feedback) {
-        DbUtil.executePost(feedback);
+    public void persistFeedback(UserFeedback feedback) {
+        dbUtil.executePost(feedback);
     }
 }

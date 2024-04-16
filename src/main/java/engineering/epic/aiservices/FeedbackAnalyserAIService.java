@@ -5,7 +5,7 @@ import engineering.epic.datastorageobjects.AtomicFeedback;
 import io.quarkiverse.langchain4j.RegisterAiService;
 
 @RegisterAiService
-public interface FeedbackAnalyzerAgentAIService {
+public interface FeedbackAnalyserAIService {
     // Method to generate atomic feedback components
     @SystemMessage("""
             The user gives feedback in the scope of a coding lab where participants learn to interact
