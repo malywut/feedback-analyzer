@@ -4,7 +4,7 @@ import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiModelName;
 import dev.langchain4j.service.AiServices;
-import engineering.epic.aiservices.FeedbackAnalyzerAgentAIService;
+import engineering.epic.aiservices.FeedbackAnalyserAIService;
 import engineering.epic.aiservices.FeedbackSplitterAIService;
 import engineering.epic.databases.FeedbackEmbeddingStore;
 import engineering.epic.datastorageobjects.AtomicFeedback;
@@ -51,8 +51,8 @@ public class FeedbackProcessor {
 
         List<String> coherentFeedbackParts = splitter.generateAtomicFeedbackComponents(feedback.getFeedback());
 
-        FeedbackAnalyzerAgentAIService analyzer =
-                AiServices.create(FeedbackAnalyzerAgentAIService.class, model);
+        FeedbackAnalyserAIService analyzer =
+                AiServices.create(FeedbackAnalyserAIService.class, model);
         for(String coherentFeedbackPart : coherentFeedbackParts) {
             try {
                 AtomicFeedback atomicFeedback = analyzer.generateAtomicFeedbackComponents(coherentFeedbackPart);
