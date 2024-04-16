@@ -59,7 +59,17 @@ public class FeedbackProcessor {
                 feedback.addAtomicFeedback(atomicFeedback);
             } catch (Exception e) {
                 System.out.println("Error processing feedback: " + e.getMessage());
-                throw new Exception("Error while processing feedback parts: " + e.getMessage());
+                e.printStackTrace();
+                System.out.println("Retrying");
+                try {
+                    AtomicFeedback atomicFeedback = analyzer.generateAtomicFeedbackComponents(coherentFeedbackPart);
+                    feedback.addAtomicFeedback(atomicFeedback);
+                } catch (Exception e2) {
+                    System.out.println("Second error processing feedback: " + e2.getMessage());
+                    e2.printStackTrace();
+                    System.out.println("Skipping");
+                    // TODO add the feedback part nonetheless even if analysis failed
+                }
             }
         }
 
