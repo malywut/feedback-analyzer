@@ -1,4 +1,4 @@
-# Feedback Analyzer Application
+# Feedback Analyser Application
 <img src='src/main/resources/images/langchain4j_logo_text.png' alt='LangChain4j Integrations' width="200">
 
 
