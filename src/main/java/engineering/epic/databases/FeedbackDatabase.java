@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class FeedbackDatabase {
@@ -461,7 +462,63 @@ public class FeedbackDatabase {
             this.feedback = feedback;
         }
 
-        // Getters here for each field
+        public int getAtomicFeedbackId() {
+            return atomicFeedbackId;
+        }
+
+        public int getUserFeedbackId() {
+            return userFeedbackId;
+        }
+
+        public int getBirthYear() {
+            return birthYear;
+        }
+
+        public String getNationality() {
+            return nationality;
+        }
+
+        public String getGender() {
+            return gender;
+        }
+
+        public List<Tag> getTags() {
+            return tags;
+        }
+
+        public Category getCategory() {
+            return category;
+        }
+
+        public int getUrgency() {
+            return urgency;
+        }
+
+        public int getSeverity() {
+            return severity;
+        }
+
+        public int getImpact() {
+            return impact;
+        }
+
+        public String getFeedback() {
+            return feedback;
+        }
+
+        public Map<String,String> getMetaInfo() {
+            Map<String,String> result = new HashMap<>();
+            result.put("percentage_of_people_affected", String.valueOf(impact));
+            result.put("severity_in_percent", String.valueOf(severity));
+            result.put("urgency_in_percent", String.valueOf(urgency));
+            result.put("feedback_category", category.toString());
+            result.put("feedback_tags_commaseparated", tags.stream().map(Tag::name).collect(Collectors.joining(", ")));
+            result.put("birthyear", String.valueOf(birthYear));
+            result.put("gender", gender);
+            result.put("nationality", nationality);
+            return result;
+        }
+
     }
 
 }

@@ -6,6 +6,7 @@ import dev.langchain4j.model.openai.OpenAiModelName;
 import dev.langchain4j.service.AiServices;
 import engineering.epic.aiservices.FeedbackAnalyzerAgentAIService;
 import engineering.epic.aiservices.FeedbackSplitterAIService;
+import engineering.epic.databases.FeedbackEmbeddingStore;
 import engineering.epic.datastorageobjects.AtomicFeedback;
 import engineering.epic.datastorageobjects.FeedbackDTO;
 import engineering.epic.datastorageobjects.UserFeedback;
@@ -18,9 +19,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 @ApplicationScoped
-public class FeedbackProcessorAgent {
+public class FeedbackProcessor {
     @Inject
     FeedbackDatabase dbUtil;
+    @Inject
+    FeedbackEmbeddingStore embeddingStore;
 
     public UserFeedback processFeedback(FeedbackDTO dto) throws Exception {
         UserFeedback feedback = new UserFeedback(
@@ -66,8 +69,7 @@ public class FeedbackProcessorAgent {
         persistFeedback(feedback);
 
         // Add feedback + embedding to the embedding store
-        // TODO implement
-        //embeddingStore.addFeedback(feedback);
+        embeddingStore.addFeedback(feedback);
 
         return feedback;
     }

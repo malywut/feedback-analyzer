@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserFeedback {
-    // TODO add insertion date
-    private int birthYear;
-    private String nationality;
-    private String gender;
-    private String feedback;
-    private List<AtomicFeedback> atomicFeedbacks = new ArrayList<>();
+    // TODO add insertion date because interesting for stats over longer time
+    public int birthYear;
+    public String nationality;
+    public String gender;
+    public String feedback;
+    public List<AtomicFeedback> atomicFeedbacks = new ArrayList<>();
 
     public UserFeedback(int age, String nationality, String gender, String feedback) {
         this.birthYear = java.time.Year.now().getValue() - age;

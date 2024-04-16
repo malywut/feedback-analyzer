@@ -1,7 +1,7 @@
 package engineering.epic.endpoints;
 
 import engineering.epic.datastorageobjects.FeedbackDTO;
-import engineering.epic.FeedbackProcessorAgent;
+import engineering.epic.FeedbackProcessor;
 import engineering.epic.datastorageobjects.UserFeedback;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -17,7 +17,7 @@ public class FeedbackController {
 
 
     @Inject
-    FeedbackProcessorAgent feedbackProcessorAgent;
+    FeedbackProcessor feedbackProcessorAgent;
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

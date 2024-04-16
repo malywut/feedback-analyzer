@@ -1,5 +1,8 @@
 package engineering.epic.endpoints;
 
+import dev.langchain4j.store.embedding.filter.Filter;
+import dev.langchain4j.store.embedding.filter.builder.sql.LanguageModelSqlFilterBuilder;
+import dev.langchain4j.store.embedding.filter.builder.sql.TableDefinition;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatLanguageModel;
@@ -58,17 +61,27 @@ public class ChatSocket {
                 .maxMessages(15)
                 .build();
 
+        TableDefinition tableDefinition = TableDefinition.builder()
+                .name("feedback_entries")
+                .addColumn("gender", "VARCHAR", "one of: [Male, Female, Prefer not to say]")
+                .addColumn("birth_year", "VARCHAR")
+                .build();
+
+        LanguageModelSqlFilterBuilder sqlFilterBuilder = new LanguageModelSqlFilterBuilder(model, tableDefinition);
+
+        EmbeddingStoreContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
+                .embeddingStore(feedbackEmbeddingStore.getEmbeddingStore())
+                .embeddingModel(new AllMiniLmL6V2EmbeddingModel())
+                .dynamicFilter(query -> sqlFilterBuilder.build(query)) // LLM will generate the filter dynamically
+                .maxResults(10)
+                .minScore(0.60) // found to be best after some experimenting
+                .build();
+
         chatService = AiServices.builder(FeedbackChatAIService.class)
                 .chatLanguageModel(model)
                 .chatMemoryProvider(memoryProvider)
-                .contentRetriever(
-                        EmbeddingStoreContentRetriever.builder()
-                                .embeddingStore(feedbackEmbeddingStore.getEmbeddingStore())
-                                .embeddingModel(new AllMiniLmL6V2EmbeddingModel())
-                                .maxResults(10)
-                                .minScore(0.6) // found to be best after some experimenting
-                                .build()
-                )
+                .contentRetriever(contentRetriever)
+
                 .build();
     }
 
