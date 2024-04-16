@@ -1,18 +1,17 @@
 package engineering.epic.endpoints;
 
 import engineering.epic.datastorageobjects.*;
-import engineering.epic.util.DbUtil;
+import engineering.epic.databases.FeedbackDatabase;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.*;
 
 @Path("api/dashboard")
 public class DashboardController {
     @Inject
-    DbUtil dbUtil;
+    FeedbackDatabase dbUtil;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

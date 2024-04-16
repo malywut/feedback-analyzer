@@ -3,11 +3,15 @@ package engineering.epic.endpoints;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatLanguageModel;
+import dev.langchain4j.model.embedding.AllMiniLmL6V2EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiModelName;
+import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.service.AiServices;
 import engineering.epic.aiservices.FeedbackChatAIService;
+import engineering.epic.databases.FeedbackEmbeddingStore;
 import io.quarkiverse.langchain4j.ChatMemoryRemover;
+import jakarta.inject.Inject;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
@@ -24,6 +28,9 @@ import org.jboss.logging.Logger;
 public class ChatSocket {
 
     private static final Logger LOG = Logger.getLogger(ChatSocket.class);
+
+    @Inject
+    FeedbackEmbeddingStore feedbackEmbeddingStore;
 
     private final ManagedExecutor managedExecutor;
 
@@ -54,6 +61,14 @@ public class ChatSocket {
         chatService = AiServices.builder(FeedbackChatAIService.class)
                 .chatLanguageModel(model)
                 .chatMemoryProvider(memoryProvider)
+                .contentRetriever(
+                        EmbeddingStoreContentRetriever.builder()
+                                .embeddingStore(feedbackEmbeddingStore.getEmbeddingStore())
+                                .embeddingModel(new AllMiniLmL6V2EmbeddingModel())
+                                .maxResults(10)
+                                .minScore(0.6) // found to be best after some experimenting
+                                .build()
+                )
                 .build();
     }
 

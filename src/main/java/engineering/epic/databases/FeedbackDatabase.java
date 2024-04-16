@@ -1,4 +1,4 @@
-package engineering.epic.util;
+package engineering.epic.databases;
 
 import engineering.epic.datastorageobjects.Category;
 import engineering.epic.datastorageobjects.Tag;
@@ -9,19 +9,16 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.nio.file.Paths;
-import java.net.URL;
 import java.util.*;
 
 @ApplicationScoped
-public class DbUtil {
+public class FeedbackDatabase {
     public static final String DB_URL_NOPE = "jdbc:sqlite:src/main/resources/stored_feedback.db";
     public static final String INTLOW_QUERY = "SELECT COUNT(*) FROM AtomicFeedback WHERE ? < 25";
     public static final String INTHIGH_QUERY = "SELECT COUNT(*) FROM AtomicFeedback WHERE ? > 75";
@@ -368,6 +365,103 @@ public class DbUtil {
             throw new RuntimeException("SQL error occurred with query [" + query + "]", e);
         }
         return categoryCounts;
+    }
+
+    public List<ExtendedAtomicFeedback> fetchExtendedFeedbacks() {
+        List<ExtendedAtomicFeedback> feedbacks = new ArrayList<>();
+        String query = """
+            SELECT 
+                af.id AS af_id,
+                af.category,
+                af.severity,
+                af.urgency,
+                af.impact,
+                af.feedback,
+                uf.id AS uf_id,
+                uf.birthYear,
+                uf.nationality,
+                uf.gender,
+                GROUP_CONCAT(t.name, ', ') AS tags
+            FROM 
+                AtomicFeedback af
+            LEFT JOIN 
+                UserFeedback uf ON af.userFeedbackId = uf.id
+            LEFT JOIN 
+                AtomicFeedback_Tag aft ON af.id = aft.atomicFeedbackId
+            LEFT JOIN 
+                Tag t ON aft.tagId = t.id
+            GROUP BY 
+                af.id
+            ORDER BY 
+                af.id
+            LIMIT 300;
+            """;
+
+        try (Connection conn = DriverManager.getConnection(this.dbUrl);
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                int atomicFeedbackId = rs.getInt("af_id");
+                Category category = Category.valueOf(rs.getString("category"));
+                int urgency = rs.getInt("urgency");
+                int severity = rs.getInt("severity");
+                int impact = rs.getInt("impact");
+                String feedbackText = rs.getString("feedback");
+                int userFeedbackId = rs.getInt("uf_id");
+                int birthYear = rs.getInt("birthYear");
+                String nationality = rs.getString("nationality");
+                String gender = rs.getString("gender");
+                String tagNames = rs.getString("tags");
+                List<Tag> tags = new ArrayList<>();
+
+                if (tagNames != null) {
+                    Arrays.stream(tagNames.split(",\\s*"))
+                            .forEach(tagName -> tags.add(Tag.valueOf(tagName.trim())));
+                }
+
+                ExtendedAtomicFeedback atomicFeedback = new ExtendedAtomicFeedback(
+                        atomicFeedbackId, userFeedbackId, birthYear, nationality, gender, tags, category, urgency, severity, impact, feedbackText
+                );
+                feedbacks.add(atomicFeedback);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error occurred when fetching extended feedbacks: " + e.getMessage());
+            throw new RuntimeException("SQL error occurred when fetching extended feedbacks", e);
+        }
+
+        return feedbacks;
+    }
+
+    public static class ExtendedAtomicFeedback {
+        private final int atomicFeedbackId;
+        private final int userFeedbackId;
+        private final int birthYear;
+        private final String nationality;
+        private final String gender;
+        private final List<Tag> tags;
+        private final Category category;
+        private final int urgency;
+        private final int severity;
+        private final int impact;
+        private final String feedback;
+
+        public ExtendedAtomicFeedback(int atomicFeedbackId, int userFeedbackId, int birthYear, String nationality, String gender,
+                                      List<Tag> tags, Category category, int urgency, int severity, int impact, String feedback) {
+            this.atomicFeedbackId = atomicFeedbackId;
+            this.userFeedbackId = userFeedbackId;
+            this.birthYear = birthYear;
+            this.nationality = nationality;
+            this.gender = gender;
+            this.tags = tags;
+            this.category = category;
+            this.urgency = urgency;
+            this.severity = severity;
+            this.impact = impact;
+            this.feedback = feedback;
+        }
+
+        // Getters here for each field
     }
 
 }

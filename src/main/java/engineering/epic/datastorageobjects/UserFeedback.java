@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserFeedback {
-    // TODO insertion date
+    // TODO add insertion date
     private int birthYear;
     private String nationality;
     private String gender;

@@ -17,7 +17,7 @@ public class FeedbackController {
 
 
     @Inject
-    FeedbackProcessorAgent fpa;
+    FeedbackProcessorAgent feedbackProcessorAgent;
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -27,7 +27,7 @@ public class FeedbackController {
 
         try {
             // Cut the feedback into atomic feedbacks
-            UserFeedback processedFeedback = fpa.processFeedback(feedbackDTO);
+            UserFeedback processedFeedback = feedbackProcessorAgent.processFeedback(feedbackDTO);
             // Return the processed feedback as JSON
             return Response.ok(processedFeedback.getAtomicFeedbacks()).build();
         } catch (Exception e) {

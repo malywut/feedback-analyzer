@@ -1,6 +1,7 @@
 package engineering.epic;
 
-import engineering.epic.util.DbUtil;
+import engineering.epic.databases.FeedbackDatabase;
+import engineering.epic.databases.FeedbackEmbeddingStore;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
@@ -15,7 +16,9 @@ public class StartupService {
     boolean prepopulate;
 
     @Inject
-    DbUtil dbUtil;
+    FeedbackDatabase dbUtil;
+    @Inject
+    FeedbackEmbeddingStore embeddingStore;
 
     public void onStart(@Observes StartupEvent ev) {
         try {
@@ -56,5 +59,8 @@ public class StartupService {
             e.printStackTrace();
             System.out.println("Failed to populate database with demo data: " + e.getMessage());
         }
+
+        // Populate embeddingstore with what is already present in the database
+        embeddingStore.populateFromDatabase(dbUtil);
     }
 }

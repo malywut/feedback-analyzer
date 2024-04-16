@@ -9,11 +9,10 @@ import engineering.epic.aiservices.FeedbackSplitterAIService;
 import engineering.epic.datastorageobjects.AtomicFeedback;
 import engineering.epic.datastorageobjects.FeedbackDTO;
 import engineering.epic.datastorageobjects.UserFeedback;
-import engineering.epic.util.DbUtil;
+import engineering.epic.databases.FeedbackDatabase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,7 +20,7 @@ import java.util.List;
 @ApplicationScoped
 public class FeedbackProcessorAgent {
     @Inject
-    DbUtil dbUtil;
+    FeedbackDatabase dbUtil;
 
     public UserFeedback processFeedback(FeedbackDTO dto) throws Exception {
         UserFeedback feedback = new UserFeedback(
@@ -65,6 +64,10 @@ public class FeedbackProcessorAgent {
 
         // Persist feedback to the database
         persistFeedback(feedback);
+
+        // Add feedback + embedding to the embedding store
+        // TODO implement
+        //embeddingStore.addFeedback(feedback);
 
         return feedback;
     }
