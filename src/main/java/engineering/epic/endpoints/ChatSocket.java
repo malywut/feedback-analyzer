@@ -69,11 +69,7 @@ public class ChatSocket {
                 .addColumn("gender", "VARCHAR", "one of: [Male, Female, Prefer not to say]")
                 .addColumn("birthyear", "VARCHAR")
                 .addColumn("nationality", "VARCHAR")
-                .addColumn("percentage_of_people_affected", "VARCHAR")
                 .addColumn("severity_in_percent", "VARCHAR")
-                .addColumn("urgency_in_percent", "VARCHAR")
-                .addColumn("feedback_category", "VARCHAR", "one of: [IdeaSuggestion, Problem, PositiveFeedback, Undefined]")
-                .addColumn("feedback_tags_commaseparated", "VARCHAR", "comma separated list of tags from this set: Examples, Inspiration, Tempo, Usefulness, EducationalValue, RoomEnvironment, Catering, Speakers, Timing, Readability, Boredom, Complexity")
                 .build();
 
         LanguageModelSqlFilterBuilder sqlFilterBuilder = new LanguageModelSqlFilterBuilder(model, tableDefinition);
