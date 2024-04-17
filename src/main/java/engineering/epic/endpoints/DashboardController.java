@@ -34,11 +34,13 @@ public class DashboardController {
         Map<String, Integer> tagCounts = dbUtil.getTagCounts();
 
         List<AnalysisValue> analysis = List.of(
+                new AnalysisValue("tags", tagCounts),
+                new AnalysisValue("categories", dbUtil.getCategoryCounts()),
                 new AnalysisValue("severity", Map.of("high", sevHigh, "medium", sevMid, "low", sevLow)),
                 new AnalysisValue("urgency", Map.of("high", urgHigh, "medium", urgMid, "low", urgLow)),
-                new AnalysisValue("impact", Map.of("high", impHigh, "medium", impMid, "low", impLow)),
-                new AnalysisValue("tags", tagCounts),
-                new AnalysisValue("categories", dbUtil.getCategoryCounts()));
+                new AnalysisValue("impact", Map.of("high", impHigh, "medium", impMid, "low", impLow))
+        );
+
 
         List<AtomicFeedback> feedbacks = dbUtil.fetchFeedbacks();
 
