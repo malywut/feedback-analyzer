@@ -73,6 +73,7 @@ What I hope you will take over for your own projects:
 What I hope you will do better:
 - Add testing, proper error handling, logging and observability
 - Exploit the configuration and injection capabilities of your framework better (LangChain4j has integrations with Quarkus or Spring Boot)
+- Call your repo analyZer with a z...
 
 
 # Feedback Analyser Architecture and Classes
