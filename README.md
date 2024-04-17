@@ -20,7 +20,7 @@ TODO add table of content
 
 ## Prerequisites
 To get this application running, you'll need
-- Java 8 or higher
+- Java 17 or higher
 - Maven
 - A key for the OpenAI API
 - Docker (optional)
