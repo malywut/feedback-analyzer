@@ -19,6 +19,7 @@ public interface FeedbackChatAIService {
            that are relevant for the group targeted by the question. Maybe some of those feedback parts are
            on a different topic than the question, in which case you may ignore those parts.
            If there are question-related feedback parts in the following information, do mention some literally.
+           FYI the year is 2024.
            """
     })
     String chat(@MemoryId Object sessionId, @UserMessage String userMessage);
