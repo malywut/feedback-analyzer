@@ -26,6 +26,23 @@ To get this application running, you'll need
 - Docker (optional)
 
 ## Setup
+
+#### :rocket: If you don't want to bother with a local setup
+You can use [Gitpod](https://gitpod.io).
+You must create an account first.
+You then can open this project in either your local VS Code or directly in your browser:
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#github.com/LizeRaes/feedback-analyzer)
+
+For the OpenAI API key, you can store it in the Gitpod environment variables.
+Use the terminal with the GitPod cli: 
+``` bash
+eval $(gp env -e OPENAI_API_KEY='sk-...')
+```
+Alternatively, go to the Gitpod User settings and add the key as an environment variable https://gitpod.io/user/variables
+
+#### Local setup
+
 - Store the OpenAI API key as environment variable `OPENAI_API_KEY` or register it in `application.properties`, and restart your IDE if needed
 - The dependencies for quarkus and it's LangChain4j integration are already in the `pom.xml` file.
 
