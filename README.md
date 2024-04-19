@@ -9,16 +9,47 @@ added a frontend (partly plain html, partly React) an SQLite database and provid
 
 You can concentrate on the business logic and use this project as a template for your own AI-powered projects.
 
-This is the architecture of the application.
+These are some parts of the frontend
+
+<img src='src/main/resources/images/feedback_form.png' width="300">
+<img src='src/main/resources/images/atomicfeedback.png' width="300">
+<img src='src/main/resources/images/dashboard.png' width="300">
+<img src='src/main/resources/images/chatassistant.png' width="400">
+
+and this is the architecture of the application.
 
 <img src='src/main/resources/images/feedbackanalyser_architecture.jpg' alt='Feedback Analyser Architecture' width="500">
 
 
-TODO add table of content
+- [Project Setup](#project-setup)
+    - [Prerequisites](#prerequisites)
+    - [Setup](#setup)
+    - [Running the Application](#running-the-application)
+    - [Observing the result](#observing-the-result)
+    - [Stopping the Application](#stopping-the-application)
+    - [Development and hot loading](#development-and-hot-loading)
+- [Goal of the Project](#goal-of-the-project)
+- [Feedback Analyser Architecture and Classes](#feedback-analyser-architecture-and-classes)
+    - [1. Feedback gathering and annotation](#1-feedback-gathering-and-annotation)
+    - [2. Feedback corpus exploration with dashboard and chat assistant](#2-feedback-corpus-exploration-with-dashboard-and-chat-assistant)
+- [Understanding the parts better](#understanding-the-parts-better)
+    - [The AI Services](#the-ai-services)
+    - [The Content Retriever for the Chatbot](#the-content-retriever-for-the-chatbot)
+    - [The SQLite database](#the-sqlite-database)
+    - [The Frontend](#the-frontend)
+    - [The Endpoints](#the-endpoints)
+- [Further Resources](#further-resources)
 
-# Project Setup
 
-## Prerequisites
+
+## Project Setup
+
+```PlainText
+Note: due to a pending bugfix we face some issues with the POJO parsing when entering feedback into the application.
+This repo will get updated with a fix in the days to come.
+```
+
+### Prerequisites
 To get this application running, you'll need
 - Java 17 or higher
 - Maven
@@ -26,8 +57,7 @@ To get this application running, you'll need
 - Docker (optional)
 
 ## Setup
-
-#### :rocket: If you don't want to bother with a local setup
+### :rocket: If you don't want to bother with a local setup
 You can use [Gitpod](https://gitpod.io).
 You must create an account first.
 You then can open this project in either your local VS Code or directly in your browser:
@@ -41,43 +71,44 @@ eval $(gp env -e OPENAI_API_KEY='sk-...')
 ```
 Alternatively, go to the Gitpod User settings and add the key as an environment variable https://gitpod.io/user/variables
 
-#### Local setup
-
+### Local setup
 - Store the OpenAI API key as environment variable `OPENAI_API_KEY` or register it in `application.properties`, and restart your IDE if needed
 - The dependencies for quarkus and it's LangChain4j integration are already in the `pom.xml` file.
 
-## Running the Application
+### Running the Application
 To run the application, execute the following command in the project root:
 ```bash
 mvn quarkus:dev
 ```
-## Observing the result
+### Observing the result
 Enter your feedback at `http://localhost:8080/feedback`
 
 Observe the analysis and chat with the results at `http://localhost:8080/dashboard`
 
-## Stopping the Application
+### Stopping the Application
 To stop the application, press Ctrl+C in the terminal
 Database entries will be persisted even when stopping and restarting the application, 
 unless you specify otherwise in `application.properties`.
 
-## Development and hot-loading
+### Development and hot loading
 Changes to the java code and html files will be hot-reloaded, so you can see the changes immediately in your browser.
 
 You can access the Quarkus Dev Console at `http://localhost:8080/q/dev/` to see the status of the application, set parameters and inspect the logs.
 
-## Building and Running the Docker Image
-TODO
+```PlainText
+DISCLAIMER:
+We tried to stay as close to plain java as possible for the LangChain4j services, to allow all developers, 
+regardless of their usual framework, to understand what’s happening after they worked through the basic tutorial.
 
-# Disclaimer TODO markup
-We tried to stay as close to plain java as possible for the LangChain4j services, to allow all developers, regardless of their usual framework, to understand what’s happening after they worked through the BASIC TUTORIAL.
-
-If you are building a deviated product yourself, it is recommended to exploit the configuration and injection options offered by the framework of your choice (Quarkus or Spring Boot) to the maximum.
+If you are building a deviated product yourself, it is recommended to exploit the configuration and injection options 
+offered by the framework of your choice (Quarkus or Spring Boot) to the maximum.
 At some places in the code, pointers for proper Quarkus use are given in the comments.
 
-This demo is a work in progress and is missing important features like proper logging, good error handling, observability, unit tests and documentation. It will come at some point :)
+This demo is a work in progress and is currently missing features like proper logging, good error handling, 
+observability, unit tests and documentation. It will come :)
+```
 
-# Goal of the project
+## Goal of the project
 The goal of this example is to give you a feel of the versatility of LangChain4j capabilities in a real-world set-up.
 What I hope you will take over for your own projects:
 - A range of AiService usages (RAG-powered chat, splitter, analyser returning POJO)
@@ -93,12 +124,66 @@ What I hope you will do better:
 - Call your repo analyZer with a z...
 
 
-# Feedback Analyser Architecture and Classes
-TODO
+## Feedback Analyser Architecture and Classes
 
-# Understanding the parts better
+The feedback analyser is intended to register feedback from users within a certain scope 
+(in this case, a coding lab with around 60 users), to automatically tag and annotate it,
+and in a second step to let organizers explore the feedback with a dashboard and a chat assistant.
 
-## The database
+The application consists of two distinct steps:
+### 1. Feedback gathering and annotation
+The users enter their feedback and a couple of additional fields at `/feedback.html`. 
+They can put different complaints in one text field.
+
+<img src='src/main/resources/images/feedback_form.png' width="400">
+
+The form input gets sent to `/api/feedback` that
+A) splits the original `UserFeedback` in pieces that are on one single topic, which we call `AtomicFeedback`
+B) for each `AtomicFeedback` text, the model annotates it with a Category, Tags, and some measures like severity and urgency.
+
+<img src='src/main/resources/images/atomicfeedback.png' width="400">
+
+C) stores the `UserFeedback` and linked `AtomicFeedbacks` in an SQLite Database
+D) calculates an embedding (semantic vector - see RAG pattern) for every `AtomicFeedback` text and stores is in an `InMemoryEmbeddingStore`
+
+This image illustrates the two main data containers (POJOs) that we use
+
+<img src='src/main/resources/images/userfeedb_atomifeedb.jpg' alt='UserFeedback and AtomicFeedback Objects' width="500">
+
+
+### 2. Feedback corpus exploration with dashboard and chat assistant
+In a second step, the organizers can inspect all the feedback via
+A) a dashboard that calls /api/dashboard which in its turn queries the SQLite Database, in order to visualise all the feedback
+
+<img src='src/main/resources/images/dashboard.png' width="300">
+
+B) a chatbot that will give an informed answer because it will semantically search similar feedback parts to the user question.
+It is currently configured to take at most the 10 most relevant pieces of feedback into account when answering.
+On top of this, it will automatically filter on certain aspects of the metadata, such as gender.
+
+<img src='src/main/resources/images/chatassistant.png' width="400">
+
+## Understanding the parts better
+
+### The AI Services
+
+`FeedbackSplitterAIService.java` contains the AI Service interface for splitting the `UserFeedback` in coherent parts
+`FeedbackAnalyserAIService.java` contains the instruction for analysing each small feedback part and annotate it with tags, severity, category, etc.
+`FeedbackChatAIService.java` contains the AI Service for the chat assistant. It will be extended with memory, content retriever etc. as described below.
+
+### The Content Retriever for the Chatbot
+Each AtomicFeedback text get stored as vector + original segment in our `InMemoryEmbeddingStore`, 
+together with some metadata of interest, such as gender, birthyear, tags, etc.
+
+For retrieving relevant segments, we implemented a basis of naive RAG 
+(= calculate the vector of the question and use the 10 best matching segments to help the LLM construct its answer).
+We added a layer of metadata filtering on fields like birthyear and gender, 
+and let the LLM take care of writing the appropriate filter for the questions.
+
+The code handling the retriever and metadata filter can be found in `ChatSocket.java`.
+
+
+### The SQLite database
 
 We are setting up an SQLite database. This will allow us to store our database data in a file stored_feedback.db, 
 within in our project. 
@@ -122,7 +207,7 @@ Don’t forget to set the property back to false afterwards.
 
 When stopping the application (`Ctrl+C`), the database stays intact.
 
-## The frontend
+### The Frontend
 
 The frontend consists html files under `src/main/resources/META-INF.resources`. 
 The Quarkus framework will ensure these are served on `/filename.html`
@@ -137,17 +222,22 @@ In `feedback.html` you’ll find an example of a webform content `POST` (JSON fo
 that will also handle the response of the backend and show it in the UI.
 To see what this gives in the UI, run the application and go to `localhost:8080/feedback.html`
 
-TODO IMAGE of /feedback
+<img src='src/main/resources/images/feedback_form.png' width="300">
+<img src='src/main/resources/images/atomicfeedback.png' width="300">
 
 A part of the frontend (`dahsboard.html`) is in React, which is harder and rather unadaptable, 
 but illustrates the possibilities better.
 
-TODO IMAGE of /dashboard
+<img src='src/main/resources/images/dashboard.png' width="300">
+<img src='src/main/resources/images/chatassistant.png' width="400">
 
 To give you a starting point for your own WebSocket handling on the frontend side (needed to build a chatbot), 
 we left the example `dashboardwithchat.html` in (observe on `localhost:8080/dashboardwithchat.html`).
 
-
+### The Endpoints
+- `FeedbackController`: at `/api/feedback` receiving `UserFeedback` in JSON and returning analysed `AtomicFeedbacks` in JSON
+- `DashboardController`: at `/api/dashboard` returning a JSON objects containing some statistics and all AtomicFeedbacks
+- `ChatSocket`: websocket at `/api/chat` returning original user question + AI answer
 
 ## Further Resources
 For a deeper dive, have a look at:
